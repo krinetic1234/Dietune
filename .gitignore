@@ -1,4 +1,5 @@
 *.db
 *.py[cod]
 .web
+Dietune/data/*
 __pycache__/
