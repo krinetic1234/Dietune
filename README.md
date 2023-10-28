@@ -3,7 +3,6 @@
 We provide personalized dietary recommendations for you based on your fitness goals. 
 
 <center><h2>========INPUTS========<h2></center>
-
 <h3>Background Information</h3>
 <ul>
     <li> Age </li>
