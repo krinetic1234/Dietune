@@ -36,7 +36,6 @@ def load_data(file_path, calories, protein, fat, carbs):
 
 def give_recommendations(og_df, calories, protein=None, fat=None, carbs=None, error_percentage=1, df=None, prev_error_len=0):
     #recursion: make sure at least 5 values displayed
-    print(df)
     if df is not None and len(df) >= 5:
         list_to_return = []
         errors = [i for i in list(og_df["error"]) if i is not None][:-1]

@@ -1,7 +1,8 @@
 def convert(weight, height, age, sex, fitness_goal, diet_goal, activity_goal):
     sex_mapping = {
-        "M": 1,
-        "F": 0
+        "Male": 1,
+        "Female": 0,
+        "Other": 0
     }
 
     fitness_goal_mapping = {
@@ -10,19 +11,19 @@ def convert(weight, height, age, sex, fitness_goal, diet_goal, activity_goal):
         "Muscle Gain": 3
     }
 
-    # change this mapping into something more meaningful
-    activity_mapping = {
-        "None: Desk Job etc.": 0,
-        "Light: sitting, standing, etc.": 1,
-        "Moderate: Lifting, continuous activity, etc. ": 2,
-        "Cardio/Sports: couple hours a day": 3,
-        "Heavy: very strenuous exercise daily": 4
-    }
-
     diet_mapping = {
         "Low-Fat": 1,
         "Low-Carb": 2,
         "Ketogenic (High Fat)": 3
+    }
+
+    # change this mapping into something more meaningful
+    activity_mapping = {
+        "None: Desk Job etc.": 0,
+        "Light: sitting, standing, etc.": 1,
+        "Moderate: Lifting, continuous activity, etc.": 2,
+        "Cardio/Sports: couple hours a day": 3,
+        "Heavy: very strenuous exercise daily": 4
     }
 
     sodium_mapping = {
