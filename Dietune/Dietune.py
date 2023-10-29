@@ -190,11 +190,15 @@ def show_value(value):
         rx.text(f"Carbs (g): {value.carbs}", font_size="8px"),
         rx.text(f"Error %: {value.error}", font_size="8px"),
         bg = '#eeeee4',
-        width = "300px",
-        height = "200px",
+        width = "225px",
+        height = "175px",
         margin = "20px",
         padding = "15px",
-        color = "black",
+        color = rx.cond(
+            value.error < 50,
+            "green",
+            "orange",
+        ),
         border = "1px solid black",
         border_radius = "md"
     )
