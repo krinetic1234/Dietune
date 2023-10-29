@@ -2,6 +2,8 @@
 
 We provide personalized dietary recommendations for you based on your fitness goals. 
 
+<img width="1382" alt="Screenshot 2023-10-29 at 12 20 05 PM" src="https://github.com/krinetic1234/Dietune/assets/56781484/e72a12b1-12eb-4da4-9f89-d9c9d1a685c4">
+
 <center><h2>========INPUTS========<h2></center>
     
 <h3>Background Information</h3>
