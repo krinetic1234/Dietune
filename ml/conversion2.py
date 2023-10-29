@@ -50,7 +50,6 @@ diet_goal = input("What are your dietary preferences:")
 optional = input("Have you done a basic metabolic panel recently and would like to share your info for more detailed results? (Y/N) ")
 
 if (optional == "Y"):
-
     fasting_glucose = float(input("Enter your fasting glucose (mg/dl) or 100000 if you don't have it: "))
     calcium = float(input("Enter your Calcium levels(mg/dl) or 100000 if you don't have it: "))
     Bicarbonate = float(input("Enter your Bicarbonate levels: "))
@@ -64,62 +63,59 @@ if (optional == "Y"):
 
     thyroid_level = float(input("Enter your TSH levels (mU/L): "))
 
+    vegetarian = input("Are you vegetarian (Y/N): ")
+    meal_count = float(input("How many meals do you eat in a single day?: "))
 
-vegetarian = input("Are you vegetarian (Y/N): ")
-meal_count = float(input("How many meals do you eat in a single day?: "))
+    under = 0
+    over = 0
+    #ok so low glucose means faster metabolism
+    if (fasting_glucose < 70):
+        under += 1
+    elif (fasting_glucose > 99):
+        over += 1
+    # if (calcium < 8.5):
+    #     under += 1
+    # elif(calcium > 10.2):
+    #     over += 1
+    if (Bicarbonate < 18):
+        over += 1
+    elif (Bicarbonate > 30):
+        under += 1
+    if (Chloride < 98):
+        under += 1
+    elif (Chloride > 106):
+        over += 1
+    if (Phosphorus < 3):
+        under += 1
+    elif (Phosphorus > 4.5):
+        over += 1
+    if (Magnesium < 1.8):
+        under += 1
+    elif (Magnesium > 3.6):
+        over += 1
+    if (Potassim < 3.5):
+        under += 1
+    elif (Potassim > 5.5):
+        over += 1
+    if (Sodium < 135):
+        under += 1
+    elif (Sodium > 147):
+        over += 1
+    if (BUN < 6):
+        under += 1
+    elif (BUN > 20):
+        over += 1
+    if (Creatinine < 0.7 and sex == 1) or (Creatinine < 0.6 and sex == 0):
+        under += 1
+    elif (Creatinine > 1.3 and sex == 1) or (Creatinine < 1.1 and sex ==0):
+        over += 1
 
-chronotype = 
-
-under = 0
-over = 0
-#ok so low glucose means faster metabolism
-if (fasting_glucose < 70):
-    under += 1
-elif (fasting_glucose > 99):
-    over += 1
-# if (calcium < 8.5):
-#     under += 1
-# elif(calcium > 10.2):
-#     over += 1
-if (Bicarbonate < 18):
-    over += 1
-elif (Bicarbonate > 30):
-    under += 1
-if (Chloride < 98):
-    under += 1
-elif (Chloride > 106):
-    over += 1
-if (Phosphorus < 3):
-    under += 1
-elif (Phosphorus > 4.5):
-    over += 1
-if (Magnesium < 1.8):
-    under += 1
-elif (Magnesium > 3.6):
-    over += 1
-if (Potassim < 3.5):
-    under += 1
-elif (Potassim > 5.5):
-    over += 1
-if (Sodium < 135):
-    under += 1
-elif (Sodium > 147):
-    over += 1
-if (BUN < 6):
-    under += 1
-elif (BUN > 20):
-    over += 1
-if (Creatinine < 0.7 and sex == 1) or (Creatinine < 0.6 and sex == 0):
-    under += 1
-elif (Creatinine > 1.3 and sex == 1) or (Creatinine < 1.1 and sex ==0):
-    over += 1
-
-if (thyroid_level < 0.4):
-    under += 5
-    sodium = 1
-elif (thyroid_level > 4.0 and sex == 1) or (thyroid_level < 2.5 and sex == 0):
-    over += 5
-    sodium = 0
+    if (thyroid_level < 0.4):
+        under += 5
+        sodium = 1
+    elif (thyroid_level > 4.0 and sex == 1) or (thyroid_level < 2.5 and sex == 0):
+        over += 5
+        sodium = 0
 
 
 
@@ -168,7 +164,7 @@ print(f"Cal Intake: {cal_intake}")
 # these ratios are grams/pound and they're based on studies available online
 # need to adjust some of these values further
 protein_ratio = (1 + 0.2 * (fitness_goal-2))
-fat_ratio = 0.25 * (diet_goal) + 0.1 * (fitness_goal-2)
+fat_ratio = (1 + 0.25 * (diet_goal) + 0.1 * (fitness_goal-2))
 
 # if (fitness_goal = 3):
 #     protein_ratio = 1 + 0.35 * (cal_intake)
@@ -186,9 +182,9 @@ protein = int(weight * protein_ratio)
 fat = int(weight * fat_ratio)
 carbs = int((cal_intake - (protein_cal_g * protein + fat_cal_g * fat)) / carbs_cal_g)
 print(f"Protein (g): {protein}\nCarbs (g): {carbs}\nFat (g): {fat}")
-if sodium == 0 : 
-    sodium_sort = "low-sodium content"
-else:
-    sodium_sort = "high-sodium content"
-print(f"As your Thyroid levels indicate, your preferences are sorted based on having {sodium_sort} .")
+# if sodium == 0 : 
+#     sodium_sort = "low-sodium content"
+# else:
+#     sodium_sort = "high-sodium content"
+# print(f"As your Thyroid levels indicate, your preferences are sorted based on having {sodium_sort} .")
 
