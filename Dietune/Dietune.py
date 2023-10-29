@@ -48,12 +48,12 @@ class FormState(rx.State):
     breakfast_list: List[filter_data.Recommendation]
     lunch_list: List[filter_data.Recommendation]
     dinner_list: List[filter_data.Recommendation]
+    #macro_recs = List[filter_data.Recommendation]
 
     def handle_submit(self, form_data: dict):
         self.form_data = form_data
         cal_intake, protein, fat, carbs = conversion2.convert(form_data["weight"], form_data["height"], form_data["age"], form_data["sex"], form_data["fitness_goal"], form_data["diet_goal"], form_data["activity_goal"])
-        print(cal_intake, protein, fat, carbs)
-        # add meal distribution (2 vs. 3)
+        #self.macro_recs = [filter_data.Recommendation(calories=cal_intake, protein=protein, fat=fat, carbs=carbs)]
         cal_intake /= 3.0
         protein /= 3.0
         fat /= 3
@@ -158,9 +158,11 @@ def form():
             on_submit=FormState.handle_submit,
         ),
         rx.divider(),
-        rx.heading("Results"),
-        rx.text(FormState.form_data.to_string()),
-        rx.text(FormState.form_data['age'], color='white', size='3px'),
+        rx.heading("Macronutrient Recommendation"),
+        # cal_intake, protein, fat, carbs
+        #rx.text(f"Calorie intake: {FormState.macro_recs[0].calories}\nProtein intake: {FormState.macro_recs[0].protein}\nFat intake: {FormState.macro_recs[0].fat}\nCarbs intake: {FormState.macro_recs[0].carbs}"),
+        color='white',
+        size='3px',
         height="100%",
         align_items="top",
         bg = "gray",
