@@ -1,11 +1,14 @@
 from rxconfig import config
 from typing import List
 import reflex as rx
-from ml import test
-from ml import filter_data
+from ml import filter_data, conversion2
+
+options: List[str] = "Male", "Female"
+breakfast_path = "/Users/jaibhatia/Desktop/filtered_data_breakfast.csv"
+lunch_path = "/Users/jaibhatia/Desktop/filtered_data_lunch.csv"
+dinner_path = "/Users/jaibhatia/Desktop/filtered_data_dinner.csv"
 
 filename = f"{config.app_name}/{config.app_name}.py"
-test_data: dict = test
 style = {
     "background": "black",
     "color": "red",
@@ -42,18 +45,28 @@ style = {
 
 class FormState(rx.State):
     form_data: dict = {}
-    recommendation_list: List[filter_data.Recommendation]
+    breakfast_list: List[filter_data.Recommendation]
+    lunch_list: List[filter_data.Recommendation]
+    dinner_list: List[filter_data.Recommendation]
 
     def handle_submit(self, form_data: dict):
         self.form_data = form_data
-        # self.recommendation_list = give_recommendations(form_data['diet goal'], ...) --> list of Recommendation object
-        self.recommendation_list = test.test(1,1,1)
+        cal_intake, protein, fat, carbs = conversion2.convert(form_data["weight"], form_data["height"], form_data["age"], form_data["sex"], form_data["fitness_goal"], form_data["diet_goal"], form_data["activity_goal"])
+        print(cal_intake, protein, fat, carbs)
+        # add meal distribution (2 vs. 3)
+        cal_intake /= 3.0
+        protein /= 3.0
+        fat /= 3
+        carbs /= 3
+        self.breakfast_list = filter_data.load_data(breakfast_path, cal_intake, protein, fat, carbs)
+        self.lunch_list = filter_data.load_data(lunch_path, cal_intake, protein, fat, carbs)
+        self.dinner_list = filter_data.load_data(dinner_path, cal_intake, protein, fat, carbs)
 
 def navbar():
     return rx.hstack(
         rx.hstack(
             rx.image(src="favicon.ico"),
-            rx.heading("My App"),
+            rx.heading("Dietune"),
         ),
         rx.spacer(),
         rx.menu(
@@ -69,40 +82,41 @@ def navbar():
 def show_value(value):
     return rx.vstack(
         rx.text(value.name, font_size="2em"),
-        rx.text(value.protein),
-        rx.text(value.fat),
-        rx.text(value.carbs),
-        border  = "1px solid white"
+        rx.text(f"Protein (g): {value.protein}"),
+        rx.text(f"Fat (g): {value.fat}"),
+        rx.text(f"Carbs (g): {value.carbs}"),
+        rx.text(f"Error %: {value.error}"),
+        border = "1px solid white"
     )
 
-def show_data_breakfast():
+def show_breakfast():
     return rx.vstack(
         rx.heading("Breakfast"),
         rx.foreach(
-                FormState.recommendation_list, # list of objects
+                FormState.breakfast_list, # list of objects
                 show_value,
             ),
         width="100%"
     )
 
-def show_data_lunch():
+
+def show_lunch():
     return rx.vstack(
         rx.heading("Lunch"),
         rx.foreach(
-                FormState.recommendation_list, # list of objects
+                FormState.lunch_list, # list of objects
                 show_value,
             ),
         width="100%"
     )
 
-
-def show_data_dinner():
+def show_dinner():
     return rx.vstack(
         rx.heading("Dinner"),
         rx.foreach(
-                FormState.recommendation_list, # list of objects
+                FormState.dinner_list, # list of objects
                 show_value,
-        ),
+            ),
         width="100%"
     )
 
@@ -136,17 +150,17 @@ def form():
                     id="diet_goal"
                 ),
                 rx.input(
-                    placeholder="Activity",
-                    id="activity"
+                    placeholder="Activity Goal",
+                    id="activity_goal"
                 ),
                 rx.button("Submit", type_="submit"),
-                
             ),
             on_submit=FormState.handle_submit,
         ),
         rx.divider(),
         rx.heading("Results"),
         rx.text(FormState.form_data.to_string()),
+        rx.text(FormState.form_data['age'], color='white', size='3px'),
         height="100%",
         align_items="top",
         bg = "gray",
@@ -161,12 +175,11 @@ def index():
         rx.hstack(
             form(),
             rx.hstack(
-                show_data_breakfast(),
-                show_data_lunch(),
-                show_data_dinner(),
+                show_breakfast(),
+                show_lunch(),
+                show_dinner(),
                 overflow = 'hidden',
                 width = "75%",
-                bg="red"
             ),
             width="100%",
             bg= "green"
