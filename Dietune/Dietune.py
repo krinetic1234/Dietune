@@ -10,9 +10,9 @@ fitness: List[str] = ["Fat Loss", "Maintenance", "Muscle Gain"]
 diet: List[str] = ["Low-Fat", "Low-Carb", "Ketogenic (High Fat)"]
 activity: List[str] = ["None: Desk Job etc.", "Light: sitting, standing, etc.", "Moderate: Lifting, continuous activity, etc.", "Cardio/Sports: couple hours a day", "Heavy: very strenuous exercise daily"]
 
-breakfast_path = "/Users/jaibhatia/Desktop/filtered_data_breakfast.csv"
-lunch_path = "/Users/jaibhatia/Desktop/filtered_data_lunch.csv"
-dinner_path = "/Users/jaibhatia/Desktop/filtered_data_dinner.csv"
+breakfast_path = "/Users/krish/Downloads/filtered_data_breakfast.csv"
+lunch_path = "/Users/krish/Downloads/filtered_data_lunch.csv"
+dinner_path = "/Users/krish/Downloads/filtered_data_dinner.csv"
 
 filename = f"{config.app_name}/{config.app_name}.py"
 style = {
@@ -62,8 +62,11 @@ class State(rx.State):
     dinner_list: List[filter_data.Recommendation]
 
     breakfast_names: List[str]
+    breakfast_names1: List[str]
     lunch_names: List[str]
+    lunch_names1: List[str]
     dinner_names: List[str]
+    dinner_names1: List[str]
 
     def change(self):
         self.processing, self.complete = True, False
@@ -87,23 +90,26 @@ class State(rx.State):
         # shortens the names
         for i in range(len(self.breakfast_list)):
             self.breakfast_names.append(self.breakfast_list[i].name)
-            # i.name = llama_finetune.get_shortened_name(i.name)
+            # self.breakfast_list[i].name = llama_finetune.get_shortened_name(self.breakfast_list[i].name)
 
         for i in range(len(self.lunch_list)):
             self.lunch_names.append(self.lunch_list[i].name)
-            # i.name = llama_finetune.get_shortened_name(i.name)
+            # self.lunch_list[i].name = llama_finetune.get_shortened_name(self.lunch_list[i].name)
 
         for i in range(len(self.dinner_list)):
             self.dinner_names.append(self.dinner_list[i].name)
-            # i.name = llama_finetune.get_shortened_name(i.name)
+            # self.dinner_list[i].name = llama_finetune.get_shortened_name(self.dinner_list[i].name)
         
         self.processing = self.change()
     
     def generate_breakfast(self):
         input = ""
+        
         for i in range(len(self.breakfast_names)):
             input += f"{i+1}. {self.breakfast_names[i]}, "
+        print(input)
         output = llama_finetune.get_additional_recs(input)
+        print(output)
         pattern = r'\d+\.\s+([^\d,]+)'
         matches = re.findall(pattern, output)
 
@@ -111,7 +117,9 @@ class State(rx.State):
             match.strip()
 
         element_list = [match.strip() for match in matches]
-        self.breakfast_names.append(i for i in element_list)
+        print(element_list)
+        self.breakfast_names1.extend([i for i in element_list])
+        print(self.breakfast_names1)
     
     def generate_lunch(self):
         input = ""
@@ -125,7 +133,7 @@ class State(rx.State):
             match.strip()
 
         element_list = [match.strip() for match in matches]
-        self.lunch_names.append(i for i in element_list)
+        self.lunch_names1.extend([i for i in element_list])
     
     def generate_dinner(self):
         input = ""
@@ -139,7 +147,7 @@ class State(rx.State):
             match.strip()
 
         element_list = [match.strip() for match in matches]
-        self.dinner_names.append(i for i in element_list)
+        self.dinner_names1.extend([i for i in element_list])
 
 
 def navbar():
@@ -154,6 +162,23 @@ def navbar():
         z_index="5",
         width="100%",
         border_bottom="1px solid black"
+    )
+
+def display_macros():
+
+    return rx.box(
+        rx.text("Calorie intake:"),
+        rx.cond(State.macro_recs[0], rx.text(State.macro_recs[0])),
+
+        rx.text("Protein intake:"),
+        rx.cond(State.macro_recs[1], rx.text(State.macro_recs[1])),
+
+        rx.text("Fat intake:"),
+        rx.cond(State.macro_recs[2], rx.text(State.macro_recs[2])),
+
+        rx.text("Carbs intake:"),
+        rx.cond(State.macro_recs[3], rx.text(State.macro_recs[3])),
+
     )
 
 # TODO: SHOW ERROR FOODS
@@ -183,6 +208,13 @@ def show_breakfast():
                 State.breakfast_list, # list of objects
                 show_value,
         ),
+        rx.heading("AI-generated breakfast meals: ", size="md"),
+        rx.ordered_list(
+            rx.foreach(
+                State.breakfast_names1, # list of names
+                rx.list_item
+            ),
+        ),
         rx.button(
             "Generate More",
             bg="#fef2f2",
@@ -200,6 +232,13 @@ def show_lunch():
                 State.lunch_list, # list of objects
                 show_value,
         ),
+        rx.heading("AI-generated lunch meals: ", size="md"),
+        rx.ordered_list(
+            rx.foreach(
+                State.lunch_names1, # list of names
+                rx.list_item
+            ),
+        ),
         rx.button(
             "Generate More",
             bg="#fef2f2",
@@ -216,7 +255,14 @@ def show_dinner():
         rx.foreach(
                 State.dinner_list, # list of objects
                 show_value,
+        ),
+        rx.heading("AI-generated dinner meals: ", size="md"),
+        rx.ordered_list(
+            rx.foreach(
+                State.dinner_names1, # list of names
+                rx.list_item
             ),
+        ),
         rx.button(
             "Generate More",
             bg="#fef2f2",
@@ -275,8 +321,8 @@ def form():
         rx.divider(),
         # TODO: DISPLAY MACRONUTRIENTS
 
-        rx.heading("Macronutrient Recommendation", size="sm"),
-        rx.text(f"Calorie intake: {State.macro_recs[0]}\nProtein intake: {State.macro_recs[1]}\nFat intake: {State.macro_recs[2]}\nCarbs intake: {State.macro_recs[3]}"),
+        rx.heading("Macronutrient Recommendation", size="md"),
+        display_macros(),
         color = 'black',
         bg = '#eeeee4',
         size = '30px',

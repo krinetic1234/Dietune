@@ -47,7 +47,7 @@ def get_shortened_name(food):
 
 def get_additional_recs(input):
   m_finetune = "Krish/llama-2-7b-chat-food-finetune-2023-10-29-02-20-22"
-  together.Models.start(m_finetune)
+  #together.Models.start(m_finetune)
 
   p = """
     Ensure the output has the same nutritional content as the input.
@@ -66,9 +66,9 @@ def get_additional_recs(input):
 
     input: 1. BBQ Chicken Sandwich, 2. Roasted Veggie Bowl
     output:"""
-  
+  print(f"input: {input}")
   output = together.Complete.create(
-    prompt = input, 
+    prompt = str(input), 
     model = m_finetune
   )
 
