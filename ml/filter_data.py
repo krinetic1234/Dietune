@@ -21,6 +21,7 @@ df['fat'] = [PDV_fat_g * (i[1]/100) for i in df['nutrition']]
 df['protein'] = [PDV_protein_g * (i[4]/100) for i in df['nutrition']] 
 df['carbs'] = [PDV_carbs_g * (i[6]/100) for i in df['nutrition']] 
 df['calories'] = [i[0] for i in df['nutrition']] 
+df['error'] = None
 
 # give recommendation foods (target protein, fat, carbs --> list of Recommendation)
 class Recommendation(rx.Base):
@@ -29,16 +30,27 @@ class Recommendation(rx.Base):
     protein: float
     fat: float
     carbs: float
+    error: float
 
-og_df = df
+og_df = df    
 
-def give_recommendations(calories, protein=None, fat=None, carbs=None, error_percentage=1, df=None):
+def give_recommendations(calories, protein=None, fat=None, carbs=None, error_percentage=1, df=None, prev_error_len=0):
     #recursion: make sure at least 5 values displayed
     if df is not None and len(df) >= 5:
-        print(df)
-        return
-    
-    print(error_percentage)
+        list_to_return = []
+        errors = [i for i in list(og_df["error"]) if i is not None][:-1]
+        df = df.reset_index()
+        df.drop(columns=["index"], inplace=True)
+        for index in range(len(df)):
+            list_to_return.append(Recommendation(name=df.loc[index]['name'], 
+                                                 calories=round(df.loc[index]['calories'], 2),
+                                                 protein=round(df.loc[index]['protein'], 2),
+                                                 fat=round(df.loc[index]['fat'], 2),
+                                                 carbs=round(df.loc[index]['carbs'], 2),
+                                                 error=round(errors[index], 2)))
+        print(list_to_return)
+        return list_to_return
+
     df = og_df
     # Create an empty list to store matching Recommendation objects
     df = df[(df['calories'] >= (calories - (calories * error_percentage / 100)))]
@@ -59,7 +71,13 @@ def give_recommendations(calories, protein=None, fat=None, carbs=None, error_per
         df = df[(df['carbs'] >= (carbs - (carbs * error_percentage / 100)))]
         df = df[(df['carbs'] <= (carbs + (carbs * error_percentage / 100)))]
 
-    give_recommendations(calories, protein, fat, carbs, error_percentage, df)
+    lower = prev_error_len
+    upper = len(df)
+    # print(error_percentage, lower, upper)
+    og_df.loc[lower:upper, "error"] = error_percentage
+    # print(list(og_df["error"]), len(list(og_df["error"])))
+
+    give_recommendations(calories, protein, fat, carbs, error_percentage, df, upper)
         
     
     
