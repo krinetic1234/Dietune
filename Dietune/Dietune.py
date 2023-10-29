@@ -10,9 +10,9 @@ fitness: List[str] = ["Fat Loss", "Maintenance", "Muscle Gain"]
 diet: List[str] = ["Low-Fat", "Low-Carb", "Ketogenic (High Fat)"]
 activity: List[str] = ["None: Desk Job etc.", "Light: sitting, standing, etc.", "Moderate: Lifting, continuous activity, etc.", "Cardio/Sports: couple hours a day", "Heavy: very strenuous exercise daily"]
 
-breakfast_path = "/Users/krish/Downloads/filtered_data_breakfast.csv"
-lunch_path = "/Users/krish/Downloads/filtered_data_lunch.csv"
-dinner_path = "/Users/krish/Downloads/filtered_data_dinner.csv"
+breakfast_path = "/Users/jaibhatia/Desktop/filtered_data_breakfast.csv"
+lunch_path = "/Users/jaibhatia/Desktop/filtered_data_lunch.csv"
+dinner_path = "/Users/jaibhatia/Desktop/filtered_data_dinner.csv"
 
 filename = f"{config.app_name}/{config.app_name}.py"
 style = {
@@ -43,6 +43,7 @@ style = {
 }
 
 class State(rx.State):
+    complete, processing = False, False
     gender: str = "No selection yet"
     fitness: str = "No selection yet"
     diet: str = "No selection yet"
@@ -53,6 +54,7 @@ class State(rx.State):
     show: bool = False
 
     ai_output: List[float]
+    macro_recs: List[float]
 
     
     breakfast_list: List[filter_data.Recommendation]
@@ -62,16 +64,17 @@ class State(rx.State):
     breakfast_names: List[str]
     lunch_names: List[str]
     dinner_names: List[str]
-    #macro_recs = List[filter_data.Recommendation]
 
     def change(self):
-        self.show = not (self.show)
+        self.processing, self.complete = True, False
 
     def handle_submit(self, form_data: dict):
         self.change()
+        yield
         self.form_data = form_data
         cal_intake, protein, fat, carbs = conversion2.convert(form_data["weight"], form_data["height"], form_data["age"], form_data["sex"], form_data["fitness"], form_data["diet"], form_data["activity"])
-        #self.macro_recs = [filter_data.Recommendation(calories=cal_intake, protein=protein, fat=fat, carbs=carbs)]
+        
+        self.macro_recs = [cal_intake, protein, fat, carbs]
         cal_intake /= 3.0
         protein /= 3.0
         fat /= 3
@@ -93,6 +96,8 @@ class State(rx.State):
         for i in range(len(self.dinner_list)):
             self.dinner_names.append(self.dinner_list[i].name)
             # i.name = llama_finetune.get_shortened_name(i.name)
+        
+        self.processing = self.change()
     
     def generate_breakfast(self):
         input = ""
@@ -139,7 +144,7 @@ class State(rx.State):
 
 def navbar():
     return rx.vstack(
-        rx.markdown("## DieTune!"),
+        rx.markdown("## DietTune!"),
         # rx.text("Based on basic biometric information, fitness/diet goals, and daily excercise, our app provides a detailed dietary plan for you.", as_="i", margin="auto"),
         bg="#d3d3d3",
         color="black",
@@ -154,13 +159,16 @@ def navbar():
 # TODO: SHOW ERROR FOODS
 def show_value(value):
     return rx.vstack(
-        rx.text(value.name, font_size="10px"),
+        rx.text(value.name, font_size="15px", ),
         rx.text(f"Protein (g): {value.protein}", font_size="8px"),
         rx.text(f"Fat (g): {value.fat}", font_size="8px"),
         rx.text(f"Carbs (g): {value.carbs}", font_size="8px"),
         rx.text(f"Error %: {value.error}", font_size="8px"),
-        width = "200px",
-        height = "100px",
+        bg = '#eeeee4',
+        width = "300px",
+        height = "200px",
+        margin = "20px",
+        padding = "15px",
         color = "black",
         border = "1px solid black",
         border_radius = "md"
@@ -260,7 +268,7 @@ def form():
                     id="activity",
                     color_schemes="twitter",
                 ),
-                rx.button("Submit", type_="submit"),
+                rx.button("Submit", type_="submit", color_scheme='pink', is_loading=State.processing),
             ),
             on_submit=State.handle_submit,
         ),
@@ -268,7 +276,7 @@ def form():
         # TODO: DISPLAY MACRONUTRIENTS
 
         rx.heading("Macronutrient Recommendation", size="sm"),
-        # rx.text(f"Calorie intake: {State.macro_recs[0].calories}\nProtein intake: {FormState.macro_recs[0].protein}\nFat intake: {FormState.macro_recs[0].fat}\nCarbs intake: {FormState.macro_recs[0].carbs}"),
+        rx.text(f"Calorie intake: {State.macro_recs[0]}\nProtein intake: {State.macro_recs[1]}\nFat intake: {State.macro_recs[2]}\nCarbs intake: {State.macro_recs[3]}"),
         color = 'black',
         bg = '#eeeee4',
         size = '30px',
@@ -283,7 +291,7 @@ def form():
     )
 
 
-@rx.page(title='Dietune')
+@rx.page(title='DietTune')
 def index():
     return rx.vstack(
         navbar(),
@@ -303,26 +311,7 @@ def index():
         color="black"
     )
 
-# TODO: DISPLAY LOADING SIGN OR SOME SORT OF MODAL
-rx.box(
-    rx.button("Confirm", on_click=State.change),
-    rx.modal(
-        rx.modal_overlay(
-            rx.modal_content(
-                rx.modal_header("Loading..."),
-                rx.modal_body(
-                    "This may take a few seconds..."
-                ),
-                rx.modal_footer(
-                    rx.button(
-                        "Close", on_click=State.change
-                    )
-                ),
-            )
-        ),
-        is_open=State.show,
-    ),
-)
+
 
 # app = rx.App(style=style)
 app = rx.App(style=style)
