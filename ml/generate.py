@@ -1,35 +1,74 @@
-#===========STEP 3: FOOD RECS (GENERATE) ===========
 import os
 import together
 
+# API key
 together.api_key = os.environ['TOGETHER_API_KEY']
 
-data_path = "Dietune/data/foods.jsonl"
-# resp1 = together.Files.check(file=data_path)
-# resp2 = together.Files.upload(file=data_path)
+# Upload file
+data_path = "Dietune/ml/foods.jsonl"
+resp1 = together.Files.check(file=data_path)
+resp2 = together.Files.upload(file=data_path)
+file_id = "file-4f209c6c-1e17-48e2-ba56-692f8d9e2e56"
 
-id = "file-902956ff-9c50-4788-aab2-8162e0ba7622"
-model = "togethercomputer/llama-2-7b"
+# Both open source model and fine-tuned model
+m = "togethercomputer/llama-2-70b-chat"
+m_finetune = "Krish/llama-2-7b-food-finetune-2023-10-28-04-59-52"
 
-# resp = together.Finetune.create(
-#   training_file = id,
-#   model = model,
-#   n_epochs = 3,
-#   n_checkpoints = 1,
-#   batch_size = 4,
-#   learning_rate = 1e-5,
-#   suffix = 'food-finetune',
-#   wandb_api_key = os.environ['WANDB_API_KEY']
-# )
+# Create a fine tuned instance
+resp = together.Finetune.create(
+  training_file = id,
+  model = m,
+  n_epochs = 3,
+  n_checkpoints = 1,
+  batch_size = 4,
+  learning_rate = 1e-5,
+  suffix = 'food-finetune',
+  wandb_api_key = os.environ['WANDB_API_KEY']
+)
 
-# fine_tune_id = resp['id']
+fine_tune_id = resp['id']
+print(fine_tune_id)
 
-# print(together.Models.list())
+# Run the models
+together.Models.start(m)
+together.Models.start(m_finetune)
 
-together.Models.start("togethercomputer/llama-2-7b")
-together.Models.start("Krish/llama-2-7b-food-finetune-2023-10-28-04-59-52")
+output = together.Complete.create(
+  prompt = "Give me five breakast foods: ", 
+  model = m_finetune
+)
 
-# output = together.Complete.create(
-#   prompt = "Isaac Asimov's Three Laws of Robotics are:\n\n1. ", 
-#   model = "Krish/llama-2-7b-food-finetune-2023-10-28-04-59-52/ft-e2fae7c2-7fa5-41ac-8792-58252a5ad77c-2023-10-28-00-20-36", 
-# )
+# Few shot learning
+p = """
+    Ensure the output has the same nutritional content as the input.
+
+    input: 1. Lentil Breakfast Bowl, 2. Quinoa Breakfast Bowl
+    output: 3. Potato Hash, 4. Kefir Smoothie, 5. Savory Oatmeal Bowl
+
+    input: 1. Yogurt Almonds, 2. Spinach Eggs, 3. Banana Chia Oat, 4. PB Toast Strawberries
+    output: 5. Avocado Muffin Eggs
+
+    input: 1. Zucchini Noodles
+    output: 2. Pork Lettuce Wraps, 3. Chorizo Burgers, 4. Chicken Fried Rice,  5. Greek Chicken Pasta
+
+    input: 1. Garlic Soup, 2. Singaporian Noodles
+    output: 3. Green Tea Noodles, 4. Coconut Fish Curry, 5. Salmon Bowl
+
+    input: 1. BBQ Chicken Sandwich, 2. Roasted Veggie Bowl
+    output:"""
+
+output = together.Complete.create(
+  prompt = p,
+  model = m,
+  max_tokens = 256,
+  temperature = 0.4,
+  top_k = 60,
+  top_p = 0.6,
+  repetition_penalty = 1.1,
+  stop = ["input", "\n"]
+)
+
+print(output['output']['choices'][0]['text'])
+
+
+
